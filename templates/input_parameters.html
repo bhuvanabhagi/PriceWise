@@ -1,0 +1,180 @@
+<!-- templates/input_parameters.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Parameters for {{ menu_item.name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .form-group {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        button {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #555;
+        }
+        .ingredients-section {
+            margin-top: 30px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        .ingredient-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .add-ingredient {
+            background-color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Optimization Parameters for {{ menu_item.name }}</h1>
+        
+        {% if error_message %}
+        <div class="error">{{ error_message }}</div>
+        {% endif %}
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="current_price">Current Price ($):</label>
+                <input type="number" step="0.01" name="current_price" id="current_price" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="min_price">Minimum Price ($):</label>
+                <input type="number" step="0.01" name="min_price" id="min_price" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="max_price">Maximum Price ($):</label>
+                <input type="number" step="0.01" name="max_price" id="max_price" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="base_demand">Base Demand (units per day at current price):</label>
+                <input type="number" step="1" name="base_demand" id="base_demand" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="price_elasticity">Price Elasticity (negative number, e.g. -5):</label>
+                <input type="number" step="0.1" name="price_elasticity" id="price_elasticity" required placeholder="Example: -5">
+                <small>For each $1 increase in price, how many fewer units will be sold?</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="total_cost">Total Cost per Unit ($):</label>
+                <input type="number" step="0.01" name="total_cost" id="total_cost" required>
+            </div>
+            
+            <div class="ingredients-section">
+                <h2>Ingredients and Constraints</h2>
+                <p>Add the ingredients required and their availability constraints:</p>
+                
+                <div id="ingredients-container">
+                    <div class="ingredient-row">
+                        <div class="form-group">
+                            <label for="ingredient_name_0">Ingredient:</label>
+                            <input type="text" name="ingredient_name" id="ingredient_name_0">
+                        </div>
+                        <div class="form-group">
+                            <label for="ingredient_quantity_0">Quantity per Unit:</label>
+                            <input type="number" step="0.01" name="ingredient_quantity" id="ingredient_quantity_0">
+                        </div>
+                        <div class="form-group">
+                            <label for="ingredient_available_0">Available Quantity:</label>
+                            <input type="number" step="0.01" name="ingredient_available" id="ingredient_available_0">
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="button" class="add-ingredient" onclick="addIngredient()">Add Another Ingredient</button>
+            </div>
+            
+            <button type="submit">Calculate Optimal Price</button>
+        </form>
+    </div>
+    
+    <script>
+        let ingredientCount = 1;
+        
+        function addIngredient() {
+            const container = document.getElementById('ingredients-container');
+            const newRow = document.createElement('div');
+            newRow.className = 'ingredient-row';
+            
+            newRow.innerHTML = `
+                <div class="form-group">
+                    <label for="ingredient_name_${ingredientCount}">Ingredient:</label>
+                    <input type="text" name="ingredient_name" id="ingredient_name_${ingredientCount}">
+                </div>
+                <div class="form-group">
+                    <label for="ingredient_quantity_${ingredientCount}">Quantity per Unit:</label>
+                    <input type="number" step="0.01" name="ingredient_quantity" id="ingredient_quantity_${ingredientCount}">
+                </div>
+                <div class="form-group">
+                    <label for="ingredient_available_${ingredientCount}">Available Quantity:</label>
+                    <input type="number" step="0.01" name="ingredient_available" id="ingredient_available_${ingredientCount}">
+                </div>
+            `;
+            
+            container.appendChild(newRow);
+            ingredientCount++;
+        }
+    </script>
+</body>
+</html>
