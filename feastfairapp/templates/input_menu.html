@@ -1,0 +1,178 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Input - Price Optimizer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'optimizer/css/styles.css' %}">
+    <style>
+        body {
+            background-image: url("{% static 'C:\Users\HP\OneDrive\Desktop\lp_application\PriceWise\feastfairapp\static\optimizer\images\bbg.jpg' %}");
+            background-color: #f8f9fa;
+            padding: 2rem 0;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+        }
+        .card-header {
+            background-color: #3498db;
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 1.2rem;
+        }
+        .menu-items-table {
+            margin-top: 20px;
+        }
+        .btn-delete {
+            color: #e74c3c;
+        }
+        .btn-optimize {
+            background-color: #2ecc71;
+            border: none;
+        }
+        .btn-optimize:hover {
+            background-color: #27ae60;
+        }
+        .btn-add {
+            background-color: #3498db;
+            border: none;
+        }
+        .btn-add:hover {
+            background-color: #2980b9;
+        }
+        .btn-back {
+            background-color: #95a5a6;
+            border: none;
+        }
+        .btn-back:hover {
+            background-color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="mb-0">Menu Price Optimizer - Add Menu Items</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                        
+                        <form method="post" class="row g-3">
+                            {% csrf_token %}
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
+                                {{ form.name }}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.cost.id_for_label }}" class="form-label">{{ form.cost.label }}</label>
+                                {{ form.cost }}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.min_price.id_for_label }}" class="form-label">{{ form.min_price.label }}</label>
+                                {{ form.min_price }}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.max_price.id_for_label }}" class="form-label">{{ form.max_price.label }}</label>
+                                {{ form.max_price }}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.estimated_demand.id_for_label }}" class="form-label">{{ form.estimated_demand.label }}</label>
+                                {{ form.estimated_demand }}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.price_elasticity.id_for_label }}" class="form-label">{{ form.price_elasticity.label }}</label>
+                                {{ form.price_elasticity }}
+                                <div class="form-text">{{ form.price_elasticity.help_text }}</div>
+                            </div>
+                            
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-add btn-primary">
+                                    <i class="fas fa-plus"></i> Add Item
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="menu-items-table">
+                            <h3>Current Menu Items</h3>
+                            
+                            {% if menu_items %}
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Cost</th>
+                                            <th>Min Price</th>
+                                            <th>Max Price</th>
+                                            <th>Est. Demand</th>
+                                            <th>Elasticity</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in menu_items %}
+                                            <tr>
+                                                <td>{{ item.name }}</td>
+                                                <td>₹{{ item.cost }}</td>
+                                                <td>₹{{ item.min_price }}</td>
+                                                <td>₹{{ item.max_price }}</td>
+                                                <td>{{ item.estimated_demand }}</td>
+                                                <td>{{ item.price_elasticity }}</td>
+                                                <td>
+                                                    <a href="{% url 'delete_item' item.id %}" class="btn btn-sm btn-delete">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                
+                                <form action="{% url 'run_optimization' %}" method="post" class="mt-4">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-optimize btn-success btn-lg">
+                                        <i class="fas fa-calculator"></i> Run Optimization
+                                    </button>
+                                </form>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    No menu items added yet. Please add items above.
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mt-4">
+                            <a href="{% url 'home' %}" class="btn btn-back btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

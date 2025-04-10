@@ -1,9 +1,12 @@
-# urls.py
+# optimizer/urls.py
+
 from django.urls import path
-from .views import HomeView, OptimizerView, InputParametersView
+from . import views
 
 urlpatterns = [
-    path('', HomeView.as_view(), name='home'),
-    path('optimizer/', OptimizerView.as_view(), name='optimizer'),
-    path('input-parameters/<int:menu_item_id>/', InputParametersView.as_view(), name='input_parameters'),
+    path('', views.home_view, name='home'),
+    path('input/', views.input_menu_view, name='input_menu'),
+    path('delete/<int:pk>/', views.delete_menu_item, name='delete_item'),
+    path('optimize/', views.run_optimization, name='run_optimization'),
+    path('results/<int:pk>/', views.results_view, name='results'),
 ]

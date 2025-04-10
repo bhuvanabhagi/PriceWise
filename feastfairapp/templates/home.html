@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Price Optimizer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'optimizer/css/styles.css' %}">
+    <style>
+        body {
+            background-image: url("{% static 'C:\Users\HP\OneDrive\Desktop\lp_application\PriceWise\feastfairapp\static\optimizer\images\bbg.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .main-container {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    padding: 3rem;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 2rem;
+            font-weight: bold;
+        }
+        .btn-optimize {
+            background-color: #3498db;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        .btn-optimize:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-container">
+            <h1>MENU PRICE OPTIMIZER</h1>
+            <p class="lead mb-4">Maximize your profits with advanced linear programming techniques</p>
+            <a href="{% url 'input_menu' %}" class="btn btn-optimize btn-primary btn-lg">OPTIMIZE MENU</a>
+        </div>
+    </div>
+</body>
+</html>
