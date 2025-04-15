@@ -9,4 +9,5 @@ urlpatterns = [
     path('delete/<int:pk>/', views.delete_menu_item, name='delete_item'),
     path('optimize/', views.run_optimization, name='run_optimization'),
     path('results/<int:pk>/', views.results_view, name='results'),
+    path('download-pdf/<int:optimization_id>/', views.generate_pdf, name='download_pdf'),
 ]

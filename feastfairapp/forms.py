@@ -17,9 +17,9 @@ class MenuItemForm(forms.ModelForm):
         }
         labels = {
             'name': 'Menu Item Name',
-            'cost': 'Cost to Produce ($)',
-            'min_price': 'Minimum Price ($)',
-            'max_price': 'Maximum Price ($)',
+            'cost': 'Cost to Produce (₹)',
+            'min_price': 'Minimum Price (₹)',
+            'max_price': 'Maximum Price (₹)',
             'estimated_demand': 'Estimated Demand (units at min price)',
             'price_elasticity': 'Price Elasticity Factor',
         }
