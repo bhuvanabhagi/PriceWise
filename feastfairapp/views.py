@@ -154,36 +154,3 @@ def results_view(request, pk):
         messages.error(request, "Optimization result not found!")
         return redirect('home')
 
-
-from django.http import HttpResponse
-from django.template.loader import get_template
-from xhtml2pdf import pisa
-from io import BytesIO
-from .models import OptimizationResult, OptimizedMenuItem  # Use the correct model names
-
-def generate_pdf(request, optimization_id):
-    # Get the optimization and menu items data
-    optimization = OptimizationResult.objects.get(id=optimization_id)
-    menu_items = OptimizedMenuItem.objects.filter(optimization=optimization)
-    
-    # Prepare context data for the template
-    context = {
-        'optimization': optimization,
-        'menu_items': menu_items,
-    }
-    
-    # Get the template
-    template = get_template(r'C:\Users\HP\OneDrive\Desktop\lp_application\PriceWise\feastfairapp\templates\pdf_report.html')
-    html = template.render(context)
-    
-    # Create a PDF from the rendered HTML
-    result = BytesIO()
-    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
-    
-    # Return the generated PDF as a downloadable file
-    if not pdf.err:
-        response = HttpResponse(result.getvalue(), content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="menu_optimization_report_{optimization_id}.pdf"'
-        return response
-    
-    return HttpResponse("Error Generating PDF", status=400)
