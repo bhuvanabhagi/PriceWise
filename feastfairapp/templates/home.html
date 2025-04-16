@@ -1,75 +1,107 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu Price Optimizer</title>
+    <title>Menu Price Optimizer - Simplex Method</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'optimizer/css/style.css' %}">
     <style>
         body {
-            background-image: url("{% static 'optimizer/images/bbg.jpg' %}");
+            background-image: url("{% static 'optimizer/images/bbg.jpg' %}");            
             background-size: cover;
             background-position: center;
-            height: 100vh;
+            background-attachment: fixed;
+            color: #333;
+            min-height: 100vh;
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
         }
         .main-container {
+            padding: 2rem;
+        }
+        
+        .main-card {
             background-color: rgba(255, 255, 255, 0.9);
             border-radius: 15px;
-            padding: 3rem;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            animation: float 3s ease-in-out infinite;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
         }
-
-        @keyframes float {
-            0% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-10px);
-            }
-
-            100% {
-                transform: translateY(0px);
-            }
-        }
-
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 2rem;
-            font-weight: bold;
-        }
-
-        .btn-optimize {
-            background-color: #3498db;
+        .btn-main {
+            background-color: #2ecc71;
             border: none;
-            padding: 1rem 2rem;
+            padding: 0.8rem 2rem;
             font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            border-radius: 30px;
             transition: all 0.3s ease;
         }
-
-        .btn-optimize:hover {
-            background-color: #2980b9;
-            transform: scale(1.05);
+        .btn-main:hover {
+            background-color: #27ae60;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(39, 174, 96, 0.3);
+        }
+        .method-badge {
+            background-color: #f39c12;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            margin-left: 10px;
+            font-size: 0.8rem;
+            vertical-align: middle;
         }
     </style>
 </head>
-
 <body>
-    <div class="container">
-        <div class="main-container">
-            <h1>MENU PRICE OPTIMIZER</h1>
-            <p class="lead mb-4">Maximize your profits with advanced linear programming techniques</p>
-            <a href="{% url 'input_menu' %}" class="btn btn-optimize btn-primary btn-lg">OPTIMIZE MENU</a>
+    <div class="container main-container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="logo-container">
+                    <img src="{% static 'optimizer/images/logo.png' %}" alt="" class="">
+                </div>
+                
+                <div class="main-card text-center">
+                    <h1 class="display-4 mb-3">Menu Price Optimizer <span class="method-badge">Simplex Method</span></h1>
+                    <p class="lead mb-4">Optimize your menu prices for maximum profit using the Simplex linear programming algorithm.</p>
+                    
+                    <div class="features mb-5">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="feature-item">
+                                    <i class="fas fa-chart-line fa-2x text-primary mb-2"></i>
+                                    <h5>Advanced Optimization</h5>
+                                    <p class="text-muted">Simplex algorithm for precise price optimization</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="feature-item">
+                                    <i class="fas fa-calculator fa-2x text-success mb-2"></i>
+                                    <h5>Profit Maximization</h5>
+                                    <p class="text-muted">Calculate optimal prices based on demand elasticity</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="feature-item">
+                                    <i class="fas fa-file-alt fa-2x text-danger mb-2"></i>
+                                    <h5>Detailed Reports</h5>
+                                    <p class="text-muted">Get comprehensive analysis of optimized prices</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a href="{% url 'input_menu' %}" class="btn btn-main btn-success btn-lg">
+                        <i class="fas fa-arrow-right me-2"></i> OPTIMIZE MENU
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

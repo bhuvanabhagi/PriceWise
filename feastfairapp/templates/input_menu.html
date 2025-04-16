@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu Input - Price Optimizer</title>
+    <title>Input Menu Items - Menu Price Optimizer</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'optimizer/css/style.css' %}">
     <style>
         body {
-            background-image: url("{% static 'optimizer/images/bbg.jpg' %}");
+            background-image: url("{% static 'optimizer/images/bg.jpeg' %}");
             background-color: #f8f9fa;
             padding: 2rem 0;
         }
@@ -18,6 +18,7 @@
             border: none;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             border-radius: 15px;
+            margin-bottom: 2rem;
         }
         .card-header {
             background-color: #3498db;
@@ -25,25 +26,29 @@
             border-radius: 15px 15px 0 0 !important;
             padding: 1.2rem;
         }
-        .menu-items-table {
-            margin-top: 20px;
+        .form-card .card-header {
+            background-color: #2ecc71;
         }
-        .btn-delete {
-            color: #e74c3c;
-        }
-        .btn-optimize {
+        .btn-add {
             background-color: #2ecc71;
             border: none;
         }
-        .btn-optimize:hover {
+        .btn-add:hover {
             background-color: #27ae60;
         }
-        .btn-add {
-            background-color: #3498db;
+        .btn-optimize {
+            background-color: #f39c12;
             border: none;
         }
-        .btn-add:hover {
-            background-color: #2980b9;
+        .btn-optimize:hover {
+            background-color: #e67e22;
+        }
+        .btn-delete {
+            background-color: #e74c3c;
+            border: none;
+        }
+        .btn-delete:hover {
+            background-color: #c0392b;
         }
         .btn-back {
             background-color: #95a5a6;
@@ -52,73 +57,115 @@
         .btn-back:hover {
             background-color: #7f8c8d;
         }
+        .alert {
+            border-radius: 10px;
+        }
+        .hint-box {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #3498db;
+        }
+        .method-badge {
+            background-color: #f39c12;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            margin-left: 10px;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-10">
-                <div class="card">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <div class="card form-card">
                     <div class="card-header">
-                        <h2 class="mb-0">Menu Price Optimizer - Add Menu Items</h2>
+                        <h2 class="mb-0">
+                            <i class="fas fa-edit"></i> Add Menu Items
+                            <span class="method-badge">Simplex Method</span>
+                        </h2>
                     </div>
                     <div class="card-body">
-                        {% if messages %}
-                            {% for message in messages %}
-                                <div class="alert alert-{{ message.tags }}">
-                                    {{ message }}
-                                </div>
-                            {% endfor %}
-                        {% endif %}
+                        <div class="hint-box">
+                            <h5><i class="fas fa-info-circle"></i> How It Works</h5>
+                            <p>Enter your menu items with their costs, price ranges, and demand information. The system will use the Simplex optimization algorithm to find the optimal price points that maximize your total profit.</p>
+                            <p><strong>Price Elasticity:</strong> How much demand changes with price (1.0 means demand decreases proportionally with price increases)</p>
+                        </div>
                         
                         <form method="post" class="row g-3">
                             {% csrf_token %}
-                            
                             <div class="col-md-6">
                                 <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
                                 {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger">{{ form.name.errors }}</div>
+                                {% endif %}
                             </div>
-                            
                             <div class="col-md-6">
                                 <label for="{{ form.cost.id_for_label }}" class="form-label">{{ form.cost.label }}</label>
                                 {{ form.cost }}
+                                {% if form.cost.errors %}
+                                    <div class="text-danger">{{ form.cost.errors }}</div>
+                                {% endif %}
                             </div>
-                            
                             <div class="col-md-6">
                                 <label for="{{ form.min_price.id_for_label }}" class="form-label">{{ form.min_price.label }}</label>
                                 {{ form.min_price }}
+                                {% if form.min_price.errors %}
+                                    <div class="text-danger">{{ form.min_price.errors }}</div>
+                                {% endif %}
                             </div>
-                            
                             <div class="col-md-6">
                                 <label for="{{ form.max_price.id_for_label }}" class="form-label">{{ form.max_price.label }}</label>
                                 {{ form.max_price }}
+                                {% if form.max_price.errors %}
+                                    <div class="text-danger">{{ form.max_price.errors }}</div>
+                                {% endif %}
                             </div>
-                            
                             <div class="col-md-6">
                                 <label for="{{ form.estimated_demand.id_for_label }}" class="form-label">{{ form.estimated_demand.label }}</label>
                                 {{ form.estimated_demand }}
+                                {% if form.estimated_demand.errors %}
+                                    <div class="text-danger">{{ form.estimated_demand.errors }}</div>
+                                {% endif %}
                             </div>
-                            
                             <div class="col-md-6">
                                 <label for="{{ form.price_elasticity.id_for_label }}" class="form-label">{{ form.price_elasticity.label }}</label>
                                 {{ form.price_elasticity }}
-                                <div class="form-text">{{ form.price_elasticity.help_text }}</div>
+                                <small class="form-text text-muted">{{ form.price_elasticity.help_text }}</small>
+                                {% if form.price_elasticity.errors %}
+                                    <div class="text-danger">{{ form.price_elasticity.errors }}</div>
+                                {% endif %}
                             </div>
-                            
-                            <div class="col-12 mt-4">
-                                <button type="submit" class="btn btn-add btn-primary">
-                                    <i class="fas fa-plus"></i> Add Item
+                            <div class="col-12 text-center mt-4">
+                                <button type="submit" class="btn btn-add btn-success">
+                                    <i class="fas fa-plus"></i> Add Menu Item
                                 </button>
                             </div>
                         </form>
-                        
-                        <hr class="my-4">
-                        
-                        <div class="menu-items-table">
-                            <h3>Current Menu Items</h3>
-                            
-                            {% if menu_items %}
-                                <table class="table table-striped">
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="mb-0"><i class="fas fa-list"></i> Current Menu Items</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if menu_items %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
                                     <thead>
                                         <tr>
                                             <th>Name</th>
@@ -140,7 +187,7 @@
                                                 <td>{{ item.estimated_demand }}</td>
                                                 <td>{{ item.price_elasticity }}</td>
                                                 <td>
-                                                    <a href="{% url 'delete_item' item.id %}" class="btn btn-sm btn-delete">
+                                                    <a href="{% url 'delete_item' item.id %}" class="btn btn-delete btn-sm btn-danger">
                                                         <i class="fas fa-trash"></i>
                                                     </a>
                                                 </td>
@@ -148,25 +195,30 @@
                                         {% endfor %}
                                     </tbody>
                                 </table>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <a href="{% url 'home' %}" class="btn btn-back btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to Home
+                                </a>
                                 
-                                <form action="{% url 'run_optimization' %}" method="post" class="mt-4">
+                                <form action="{% url 'run_optimization' %}" method="post">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-optimize btn-success btn-lg">
-                                        <i class="fas fa-calculator"></i> Run Optimization
+                                    <button type="submit" class="btn btn-optimize btn-warning">
+                                        <i class="fas fa-calculator"></i> Run Simplex Optimization
                                     </button>
                                 </form>
-                            {% else %}
-                                <div class="alert alert-info">
-                                    No menu items added yet. Please add items above.
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mt-4">
-                            <a href="{% url 'home' %}" class="btn btn-back btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Back to Home
-                            </a>
-                        </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> No menu items added yet. Add some items to optimize!
+                            </div>
+                            <div class="text-center">
+                                <a href="{% url 'home' %}" class="btn btn-back btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to Home
+                                </a>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

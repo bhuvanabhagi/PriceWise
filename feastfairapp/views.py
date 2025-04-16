@@ -56,101 +56,130 @@ def run_optimization(request):
         # Set up the linear programming problem
         num_items = len(menu_items)
         
-        # The optimization variables are the prices for each item
-        # We'll normalize prices between min and max for each item
-        # So our variables will be ratios between 0 and 1
+        # Since simplex method is for linear problems, we need to linearize our problem
+        # We'll use price variables normalized between 0 and 1 for each item
         
-        # Objective function: Maximize profit
-        # For each item: profit = (price - cost) * demand
-        # Where demand = base_demand * (1 - elasticity * normalized_price)
+        # Objective: Maximize profit (or minimize negative profit for linprog)
+        # For each item i: profit_i = (price_i - cost_i) * demand_i
+        # Where demand_i = base_demand_i * (1 - elasticity_i * normalized_price_i)
         
-        # In scipy.optimize.linprog, we need to minimize not maximize,
-        # so we negate our profit function
-        c = []  # Coefficients for the objective function
+        # Bounds for variables: 0 <= x_i <= 1 for all i
+        bounds = [(0, 1) for _ in range(num_items)]
         
-        for item in menu_items:
+        # For linprog, we want to minimize c^T * x
+        # Since we want to maximize profit, we'll use negative coefficients
+        c = []
+        
+        # Build the objective function coefficients
+        for i, item in enumerate(menu_items):
             min_price = float(item.min_price)
             max_price = float(item.max_price)
             cost = float(item.cost)
             base_demand = item.estimated_demand
             elasticity = float(item.price_elasticity)
-            
-            # For a normalized price x between 0 and 1:
-            # actual_price = min_price + x * (max_price - min_price)
-            # demand = base_demand * (1 - elasticity * x)
-            # profit = (actual_price - cost) * demand
-            
             price_range = max_price - min_price
             
-            # Expanded profit function:
-            # profit = (min_price + x*price_range - cost) * base_demand * (1 - elasticity*x)
-            # = base_demand * [(min_price - cost) * (1 - elasticity*x) + x*price_range*(1 - elasticity*x)]
-            # = base_demand * [(min_price - cost) - (min_price - cost)*elasticity*x + x*price_range - x²*price_range*elasticity]
+            # Linearized approximation of our profit function
+            # We'll use two coefficients to approximate the quadratic profit function
+            # Based on the first derivative at x=0 and x=1
             
-            # Coefficient for x:
-            # base_demand * [-(min_price - cost)*elasticity + price_range]
+            # At x=0: price = min_price, demand = base_demand
+            profit_at_min = (min_price - cost) * base_demand
             
-            # Coefficient for x²:
-            # base_demand * [-price_range*elasticity]
+            # At x=1: price = max_price, demand = base_demand * (1 - elasticity)
+            demand_at_max = base_demand * (1 - elasticity)
+            if demand_at_max < 0:
+                demand_at_max = 0
+            profit_at_max = (max_price - cost) * demand_at_max
             
-            # Since we can't directly represent x² in linear programming,
-            # we'll approximate with a piecewise linear function
-            
-            # For simplicity, we'll just use the expected profit at a few price points
-            # and find the maximum
-            
-            # Test 5 evenly spaced price points between min and max
-            price_points = np.linspace(min_price, max_price, 5)
-            profits = []
-            
-            for price in price_points:
-                normalized_price = (price - min_price) / price_range if price_range > 0 else 0
-                demand = base_demand * (1 - elasticity * normalized_price)
-                if demand < 0:
-                    demand = 0
-                profit = (price - cost) * demand
-                profits.append(profit)
-            
-            # Choose the price with the highest profit
-            best_idx = np.argmax(profits)
-            best_price = price_points[best_idx]
-            
-            item.optimized_price = best_price
-            item.expected_demand = base_demand * (1 - elasticity * (best_price - min_price) / price_range if price_range > 0 else 0)
-            if item.expected_demand < 0:
-                item.expected_demand = 0
-            item.profit = (best_price - cost) * item.expected_demand
-            
-        # Create optimization result
-        total_profit = sum(getattr(item, 'profit', 0) for item in menu_items)
-        optimization = OptimizationResult.objects.create(total_profit=total_profit)
+            # Linear coefficient (negative for minimization)
+            linear_coef = -(profit_at_max - profit_at_min)
+            c.append(linear_coef)
         
-        # Store optimized menu items
-        for item in menu_items:
-            OptimizedMenuItem.objects.create(
-                optimization=optimization,
-                name=item.name,
-                optimized_price=getattr(item, 'optimized_price', 0),
-                expected_demand=getattr(item, 'expected_demand', 0),
-                item_profit=getattr(item, 'profit', 0)
+        # Add constant term to the objective value later (not part of linprog input)
+        constant_term = sum((float(item.min_price) - float(item.cost)) * item.estimated_demand 
+                          for item in menu_items)
+        
+        # No inequality constraints needed for this basic formulation
+        A_ub = None
+        b_ub = None
+        
+        # No equality constraints
+        A_eq = None
+        b_eq = None
+        
+        # Solve the linear program using simplex method
+        result = linprog(
+            c=c,
+            A_ub=A_ub,
+            b_ub=b_ub,
+            A_eq=A_eq,
+            b_eq=b_eq,
+            bounds=bounds,
+            method='simplex'  # Explicitly use simplex method
+        )
+        
+        if result.success:
+            # Extract optimized values
+            opt_normalized_prices = result.x
+            
+            # Calculate actual prices and expected demand/profit for each item
+            for i, item in enumerate(menu_items):
+                min_price = float(item.min_price)
+                max_price = float(item.max_price)
+                cost = float(item.cost)
+                base_demand = item.estimated_demand
+                elasticity = float(item.price_elasticity)
+                price_range = max_price - min_price
+                
+                # Convert normalized price (0-1) to actual price
+                normalized_price = opt_normalized_prices[i]
+                item.optimized_price = min_price + normalized_price * price_range
+                
+                # Calculate expected demand at this price
+                item.expected_demand = base_demand * (1 - elasticity * normalized_price)
+                if item.expected_demand < 0:
+                    item.expected_demand = 0
+                
+                # Calculate profit
+                item.profit = (item.optimized_price - cost) * item.expected_demand
+            
+            # Create optimization result - CHANGE THIS LINE
+            total_profit = sum(getattr(item, 'profit', 0) for item in menu_items)
+            optimization = OptimizationResult.objects.create(
+                total_profit=total_profit,
+                method="Simplex"  # Explicitly set the method
             )
-        
-        return redirect('results', pk=optimization.pk)
+            
+            # Store optimized menu items - FIXED INDENTATION HERE
+            for item in menu_items:
+                OptimizedMenuItem.objects.create(
+                    optimization=optimization,
+                    name=item.name,
+                    optimized_price=round(getattr(item, 'optimized_price', 0), 2),
+                    expected_demand=round(getattr(item, 'expected_demand', 0), 2),
+                    item_profit=round(getattr(item, 'profit', 0), 2)
+                )
+            
+            return redirect('results', pk=optimization.pk)
+        else:
+            # Optimization failed
+            messages.error(request, f"Optimization failed: {result.message}")
+            return redirect('input_menu')
     else:
         return redirect('input_menu')
-
+    
 def results_view(request, pk):
-    """View the optimization results."""
+    """Display the optimization results for the specified optimization."""
     try:
         optimization = OptimizationResult.objects.get(pk=pk)
-        menu_items = optimization.menu_items.all()
+        optimized_items = optimization.menu_items.all()  # This is correct - gets all items
         
         context = {
             'optimization': optimization,
-            'menu_items': menu_items,
+            'optimized_items': optimized_items,  # Correctly passing all items to template
         }
         return render(request, 'results.html', context)
     except OptimizationResult.DoesNotExist:
-        messages.error(request, "Optimization result not found!")
-        return redirect('home')
-
+        messages.error(request, "Optimization results not found.")
+        return redirect('home_view')
